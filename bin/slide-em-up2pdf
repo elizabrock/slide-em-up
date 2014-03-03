@@ -22,7 +22,7 @@ pid = Process.fork do
 end
 
 # Count the number of slides
-nb_slides = presentation.nb_slides
+slide_count = presentation.slide_count
 
 # The phantomjs script
 js = <<-EOS
@@ -37,7 +37,7 @@ function exportSlides() {
     console.log('Render slide ' + i);
     page.render(dir + '/slide' + i + '.pdf');
     page.sendEvent('keypress', ' ');
-    if (++i == #{nb_slides}) { phantom.exit(); }
+    if (++i == #{slide_count}) { phantom.exit(); }
   }, #{delay});
 }
 
@@ -58,7 +58,7 @@ Dir.mktmpdir do |dir|
   script = "#{dir}/script.js"
   File.write script, js
   system "phantomjs #{script} #{dir}"
-  files = (0...nb_slides).map {|i| "#{dir}/slide#{i}.pdf" }.join ' '
+  files = (0...slide_count).map {|i| "#{dir}/slide#{i}.pdf" }.join ' '
   system "pdftk #{files} cat output #{output}"
   File.delete script
 end

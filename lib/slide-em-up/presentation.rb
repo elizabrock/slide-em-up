@@ -1,12 +1,11 @@
 require "erubis"
 require "yajl"
 
-
 module SlideEmUp
   class Presentation
-    Meta    = Struct.new(:title, :dir, :css, :js, :author, :duration)
+    Meta    = Struct.new(:title, :dir, :css, :js, :file, :file_contents, :author, :duration)
     Theme   = Struct.new(:title, :dir, :css, :js)
-    Section = Struct.new(:number, :title, :dir, :slides)
+    Section = Struct.new(:number, :title, :slides)
 
     class Slide < Struct.new(:number, :classes, :html)
       def extract_title
@@ -16,16 +15,15 @@ module SlideEmUp
       end
     end
 
-    attr_accessor :meta, :theme, :common, :parts
+    attr_accessor :meta, :theme, :common, :sections
 
-    def initialize(dir)
-      infos   = extract_normal_infos(dir) || extract_infos_from_showoff(dir) || {}
-      infos   = { "title" => "No title", "theme" => "shower", "duration" => 60 }.merge(infos)
-      @meta   = build_meta(infos["title"], dir, infos["author"], infos["duration"])
-      @theme  = build_theme(infos["theme"])
+    def initialize(file, opts = {})
+      options   = { "theme" => "html5rocks", "duration" => 60, "author" => extract_author }.merge(opts)
+      @meta   = build_meta(file, options["author"], options["duration"])
+      @theme  = build_theme(options["theme"])
       @common = build_theme("common")
-      @parts  = infos["sections"] || raise(Exception, "check your presentation.json or showoff.json file")
-      @parts  = Hash[@parts.zip @parts] if Array === @parts
+      presentation_body = @meta.file_contents.partition(/^#\s*(.*)$/)[2]
+      @sections = extract_sections_from(presentation_body, 0)[1]
     end
 
     def html
@@ -34,46 +32,38 @@ module SlideEmUp
     end
 
     def path_for_asset(asset)
-      Dir[     "#{meta.dir}#{asset}"].first ||
-        Dir[  "#{theme.dir}#{asset}"].first ||
-        Dir[ "#{common.dir}#{asset}"].first ||
-        Dir["#{meta.dir}/**#{asset}"].first
+      Dir[   "#{meta.dir}#{asset}"].first ||
+      Dir[  "#{theme.dir}#{asset}"].first ||
+      Dir[ "#{common.dir}#{asset}"].first ||
+      Dir["#{meta.dir}/**#{asset}"].first
     end
 
-    def nb_slides
-      @parts.inject(0) do |nb,(dir,title)|
-        raw = Dir["#{meta.dir}/#{dir}/**/*.md"].map { |f| File.read(f) }.join("\n\n")
-        nb += raw.split(/!SLIDE */).length
-      end
+    def slide_count
+      sections.inject(0){ |memo, section| memo + section.slides.count }
     end
 
   protected
 
-    def extract_normal_infos(dir)
-      filename = "#{dir}/presentation.json"
-      return unless File.exists?(filename)
-      Yajl::Parser.parse(File.read filename)
+    def extract_author
+      "Unknown"
     end
 
-    def extract_infos_from_showoff(dir)
-      filename = "#{dir}/showoff.json"
-      return unless File.exists?(filename)
-      infos = Yajl::Parser.parse(File.read filename)
-      sections = infos["sections"].map {|s| s["section"] }
-      { "title" => infos["name"], "theme" => "showoff", "sections" => sections }
-    end
-
-    def build_meta(title, dir, author, duration)
+    def build_meta(file, author, duration)
       Meta.new.tap do |m|
-        m.title = title
-        m.dir   = dir
-        Dir.chdir(m.dir) do
-          m.css = Dir["**/*.css"]
-          m.js  = Dir["**/*.js"]
-        end
+        m.file = file
+        m.dir = File.dirname(File.realpath(file))
+        m.file_contents = File.read(m.file)
+        m.title = extract_title(m.file_contents)
+        m.css = []
+        m.js = []
         m.author = author
         m.duration = duration
       end
+    end
+
+    def extract_title contents
+      match = contents.scan(/^#\s*(.*)$/)
+      match[0][0]
     end
 
     def build_theme(title)
@@ -92,18 +82,26 @@ module SlideEmUp
       end
     end
 
-    def sections
-      @parts.map.with_index do |(dir,title),i|
-        raw = Dir["#{meta.dir}/#{dir}/**/*.md"].sort.map { |f| File.read(f) }.join("\n\n")
-        parts = raw.split(/!SLIDE */)
-        parts.delete('')
-        slides = parts.map.with_index do |slide,j|
-          @codemap = {}
-          classes, md = slide.split("\n", 2)
-          html = Markdown.render(md)
-          Slide.new(j, classes, html)
-        end
-        Section.new(i, title, dir, slides)
+    def extract_sections_from text, index
+      head, match, tail = text.partition(/^##.*$/)
+      text_before_section = head.strip
+      remainder = tail.strip
+      return text_before_section, [] if remainder.empty?
+
+      match = match.scan(/##\s*(.*)/)
+      section_title = match[0][0]
+
+      slides_body, following_sections = extract_sections_from(remainder, index+1)
+      slides = slides_body.empty? ? [] : extract_slides_from(slides_body)
+      return text_before_section, [Section.new(index, section_title, slides), following_sections].flatten
+    end
+
+    def extract_slides_from text
+      slide_bodies = text.split(/^~~~/)
+      slide_bodies.map.with_index do |slide, j|
+        classes, md = slide.split("\n", 2)
+        html = Markdown.render(md)
+        Slide.new(j, classes, html)
       end
     end
   end

@@ -14,7 +14,7 @@
   </head>
   <body>
     <div id="main">
-      <% sections.each do |section| %>
+      <% sections.each_with_index do |section| %>
         <section id="section-<%= section.number %>">
           <% section.slides.each do |slide| %>
             <section id="slide-<%= section.number %>-<%= slide.number%>" class="<%= slide.classes %>">

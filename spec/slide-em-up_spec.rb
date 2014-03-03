@@ -1,20 +1,22 @@
 #!/usr/bin/env ruby
 
 require "minitest/autorun"
-require "slide-em-up"
-
+require_relative "../lib/slide-em-up"
 
 describe SlideEmUp do
   before do
-    dir = File.expand_path("../example", __FILE__)
-    @presentation = SlideEmUp::Presentation.new(dir)
+    presentation = File.expand_path("../example/presentation.md", __FILE__)
+    options = { "theme" => "3d_slideshow" }
+    @presentation = SlideEmUp::Presentation.new(presentation, options)
   end
-
 
   it "has a version number" do
     SlideEmUp::VERSION.must_match /\d+\.\d+\.\d+/
   end
 
+  it "has a slide count" do
+    @presentation.slide_count.must_equal 5
+  end
 
   describe "Building a presentation" do
     it "has a title" do
@@ -25,19 +27,17 @@ describe SlideEmUp do
       @presentation.theme.title.must_equal "3d_slideshow"
     end
 
-    it "has 3 sections, each one with a title" do
-      @presentation.parts.keys.length.must_equal 3
-      expected = { "one" => "one", "two" => "two", "three" => "three" }
-      @presentation.parts.must_equal expected
+    it "has 2 sections, each one with a title" do
+      @presentation.sections.length.must_equal 2
+      expected = ["Section One", "Section 2"]
+      @presentation.sections.map(&:title).must_equal expected
     end
   end
 
-
   describe "Finding assets" do
     it "can find an asset in the presentation" do
-      @presentation.path_for_asset("/css/reset.css").must_equal File.expand_path("../example/css/reset.css", __FILE__)
+      @presentation.path_for_asset("octocat.png").must_equal File.expand_path("../example/octocat.png", __FILE__)
     end
-
     it "can find an asset in the theme" do
       @presentation.path_for_asset("/css/main.css").must_equal File.expand_path("../../themes/3d_slideshow/css/main.css", __FILE__)
     end
@@ -47,22 +47,25 @@ describe SlideEmUp do
     end
   end
 
-
   describe "Rendering HTML" do
     before do
       @html = @presentation.html
     end
 
-    it "has 3 sections" do
-      3.times do |i|
+    it "has 2 sections" do
+      2.times do |i|
         @html.must_match /<section id="section-#{i}">/
       end
     end
 
-    it "has 3 slides in the first section" do
-      3.times do |i|
+    it "has 2 slides in the first section" do
+      2.times do |i|
         @html.must_match /<section id="slide-0-#{i}"/
       end
+    end
+
+    it "renders the classes on the slides" do
+      @html.must_match /<section id="slide-1-1" class="foo-class bar-class">/
     end
 
     it "renders Markdown" do
@@ -71,15 +74,6 @@ describe SlideEmUp do
 
     it "renders code blocks" do
       @html.must_match /<code class="ruby">.+<\/code>/m
-    end
-  end
-
-  describe "no json presentation" do
-    it 'raise error with nither presentation.json or showoff.json file' do
-      proc {
-        space_dir = File.expand_path("../example1/", __FILE__)
-        @presentation = SlideEmUp::Presentation.new(space_dir)
-      }.must_raise Exception
     end
   end
 end

@@ -1,8 +1,8 @@
 module SlideEmUp
-  autoload :Markdown,        "slide-em-up/markdown"
-  autoload :Presentation,    "slide-em-up/presentation"
-  autoload :SlidesAPI,       "slide-em-up/slides_api"
-  autoload :RemoteAPI,       "slide-em-up/remote_api"
-  autoload :Routes,          "slide-em-up/routes"
-  autoload :VERSION,         "slide-em-up/version"
+  require_relative "slide-em-up/markdown"
+  require_relative "slide-em-up/presentation"
+  require_relative "slide-em-up/slides_api"
+  require_relative "slide-em-up/remote_api"
+  require_relative "slide-em-up/routes"
+  require_relative "slide-em-up/version"
 end
