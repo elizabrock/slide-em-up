@@ -16,10 +16,8 @@ Gem::Specification.new do |s|
   s.require_paths    = ["lib"]
   s.rubygems_version = %q{1.3.7}
   s.add_dependency "goliath", "=1.0.2"
-  s.add_dependency "redcarpet", "~>2.1"
+  s.add_dependency "redcarpet", "~>3.1"
   s.add_dependency "erubis", "~>2.7"
-  s.add_dependency "yajl-ruby", "~>1.1"
-  s.add_dependency "pygments.rb", "~>0.3"
   s.add_development_dependency "minitest", "~>2.3"
   s.add_development_dependency "m", "~> 1.3.2"
 end

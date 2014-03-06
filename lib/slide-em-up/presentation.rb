@@ -1,5 +1,4 @@
 require "erubis"
-require "yajl"
 
 module SlideEmUp
   class Presentation

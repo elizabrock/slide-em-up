@@ -1,7 +1,5 @@
 # Encoding: utf-8
-require "pygments"
 require "redcarpet"
-
 
 module SlideEmUp
   class Markdown < Redcarpet::Render::HTML
@@ -21,8 +19,7 @@ module SlideEmUp
     end
 
     def block_code(code, lang)
-      colorized = Pygments.highlight(code, :lexer => lang || "text", :options => {:nowrap => true})
-      "<pre><code class=\"#{lang}\">#{colorized}</code></pre>"
+      "<pre><code class=\"prettyprint linenums lang-#{lang}\">#{code}</code></pre>"
     end
 
     def strikethrough(text)

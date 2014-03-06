@@ -73,7 +73,7 @@ describe SlideEmUp do
     end
 
     it "renders code blocks" do
-      @html.must_match /<code class="ruby">.+<\/code>/m
+      @html.must_match /<code class="prettyprint linenums lang-ruby">.+<\/code>/m
     end
   end
 end
