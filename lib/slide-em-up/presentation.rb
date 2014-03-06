@@ -18,7 +18,7 @@ module SlideEmUp
     attr_accessor :meta, :theme, :common, :sections
 
     def initialize(file, opts = {})
-      options   = { "theme" => "html5rocks", "duration" => 60, "author" => extract_author }.merge(opts)
+      options   = { "theme" => "rmcgibbo_slidedeck", "duration" => 60, "author" => extract_author }.merge(opts)
       @meta   = build_meta(file, options["author"], options["duration"])
       @theme  = build_theme(options["theme"])
       @common = build_theme("common")

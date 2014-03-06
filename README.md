@@ -19,3 +19,10 @@ To use my fork, you can add it to your Gemfile as such:
   gem 'slide-em-up', github: "elizabrock/slide-em-up", branch: 'master'
 
 Then, run it with `slide-em-up mypresentation.md`
+
+
+## Credits:
+
+Slide 'em up forked from: https://github.com/nono/slide-em-up
+
+Theme based on: https://github.com/rmcgibbo/slidedeck
