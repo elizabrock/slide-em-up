@@ -6,10 +6,6 @@ module SlideEmUp
 
     def self.run(presentation, opts = {})
       Rack::Builder.new do
-        map '/remote' do
-          run SlideEmUp::RemoteAPI.new(opts[:remote_key])
-        end
-
         map '/' do
           run SlideEmUp::SlidesAPI.new(presentation)
         end
