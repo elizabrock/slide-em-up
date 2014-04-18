@@ -2,7 +2,7 @@ require "erubis"
 
 module SlideEmUp
   class Presentation
-    Meta    = Struct.new(:title, :dir, :css, :js, :file, :file_contents, :author, :duration)
+    Meta    = Struct.new(:title, :dir, :css, :js, :file_contents, :author)
     Theme   = Struct.new(:title, :dir, :css, :js)
     Section = Struct.new(:number, :title, :slides)
 
@@ -16,9 +16,9 @@ module SlideEmUp
 
     attr_accessor :meta, :theme, :common, :sections
 
-    def initialize(file, opts = {})
-      options   = { "theme" => "rmcgibbo_slidedeck", "duration" => 60, "author" => extract_author }.merge(opts)
-      @meta   = build_meta(file, options["author"], options["duration"])
+    def initialize(opts)
+      options   = { "theme" => "rmcgibbo_slidedeck", "author" => extract_author }.merge(opts)
+      @meta   = build_meta(options)
       @theme  = build_theme(options["theme"])
       @common = build_theme("common")
       presentation_body = @meta.file_contents.partition(/^#\s*(.*)$/)[2]
@@ -47,16 +47,19 @@ module SlideEmUp
       "Unknown"
     end
 
-    def build_meta(file, author, duration)
+    def build_meta(options)
       Meta.new.tap do |m|
-        m.file = file
-        m.dir = File.dirname(File.realpath(file))
-        m.file_contents = File.read(m.file)
+        if options[:filename]
+          filename = options[:filename]
+          m.dir = File.dirname(File.realpath(filename))
+          m.file_contents = File.read(filename)
+        else
+          m.file_contents = options[:contents]
+        end
         m.title = extract_title(m.file_contents)
         m.css = []
         m.js = []
-        m.author = author
-        m.duration = duration
+        m.author = options["author"]
       end
     end
 
