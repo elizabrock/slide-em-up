@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.executables      = ["slide-em-up", "slide-em-up2pdf"]
   s.require_paths    = ["lib"]
   s.rubygems_version = %q{1.3.7}
-  s.add_dependency "goliath", "=1.0.2"
+  s.add_development_dependency "goliath", "=1.0.2"
   s.add_dependency "redcarpet", "~>3.1"
   s.add_dependency "erubis", "~>2.7"
   s.add_development_dependency "minitest", "~>2.3"

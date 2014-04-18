@@ -4,7 +4,7 @@ require "slide-em-up"
 require "goliath/runner"
 
 
-presentation = SlideEmUp::Presentation.new(ARGV[0])
+presentation = SlideEmUp::Presentation.new(filename: ARGV[0])
 
 runner = Goliath::Runner.new(ARGV, nil)
 runner.app = SlideEmUp::Routes.run(presentation)

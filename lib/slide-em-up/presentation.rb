@@ -1,4 +1,5 @@
 require "erubis"
+require_relative 'markdown'
 
 module SlideEmUp
   class Presentation
